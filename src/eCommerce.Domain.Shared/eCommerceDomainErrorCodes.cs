@@ -2,5 +2,8 @@
 
 public static class eCommerceDomainErrorCodes
 {
-    /* You can add your business exception error codes here, as constants */
+    public const string ProductAlreadyExists = "eCommerce:00001";
+    public const string CategoryAlreadyExists = "eCommerce:00002";
+    public const string DiscountAlreadyExists = "eCommerce:00003";
+    public const string StoreAlreadyExists = "eCommerce:00004";
 }
