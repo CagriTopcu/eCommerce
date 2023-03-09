@@ -1,0 +1,15 @@
+﻿using System;
+using System.Threading.Tasks;
+using Volo.Abp.Application.Dtos;
+using Volo.Abp.Application.Services;
+
+namespace eCommerce.Categories;
+
+public interface ICategoryAppService : IApplicationService
+{
+    Task<CategoryDto> GetAsync(Guid id);
+    Task<PagedResultDto<CategoryDto>> GetListAsync(GetCategoryListDto input);
+    Task<CategoryDto> CreateAsync(CreateCategoryDto input);
+    Task UpdateAsync(Guid id, UpdateCategoryDto input);
+    Task DeleteAsync(Guid id);
+}
