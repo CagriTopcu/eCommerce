@@ -14,13 +14,23 @@ namespace eCommerce.Categories
         { 
         }
 
-        public Category(
-            Guid id,
-            string name,
-            string description) : base(id)
+        public Category(Guid id, string name, string description) 
+            : base(id)
         {
             SetName(name);
-            Description = description;
+            SetDescription(description);
+        }
+
+        internal Category ChangeName([NotNull] string name)
+        {
+            SetName(name);
+            return this;
+        }
+        
+        public Category ChangeDescription([NotNull] string description)
+        {
+            SetDescription(description);
+            return this;
         }
 
         private void SetName([NotNull] string name)
@@ -30,6 +40,15 @@ namespace eCommerce.Categories
                 nameof(name),
                 maxLength: CategoryConsts.MaxNameLength,
                 minLength: CategoryConsts.MinNameLength);
+        }
+
+        private void SetDescription([NotNull] string description)
+        {
+            Description = Check.NotNullOrWhiteSpace(
+                description,
+                nameof(description),
+                maxLength: CategoryConsts.MaxDescriptionLength,
+                minLength: CategoryConsts.MinDescriptionLength);
         }
     }
 }

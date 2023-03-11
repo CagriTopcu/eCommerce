@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Domain.Repositories;
 
 namespace eCommerce.Categories;
 
@@ -15,28 +17,59 @@ public class CategoryAppService : eCommerceAppService, ICategoryAppService
         _categoryManager = categoryManager;
     }
 
-    public Task<CategoryDto> CreateAsync(CreateCategoryDto input)
+    public async Task<CategoryDto> CreateAsync(CreateCategoryDto input)
     {
-        throw new NotImplementedException();
+        var category = await _categoryManager.CreateAsync(
+            input.Name,
+            input.Description);
+
+        await _categoryRepository.InsertAsync(category);
+        return ObjectMapper.Map<Category, CategoryDto>(category);
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        await _categoryRepository.DeleteAsync(id);
     }
 
-    public Task<CategoryDto> GetAsync(Guid id)
+    public async Task<CategoryDto> GetAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var category = await _categoryRepository.GetAsync(id);
+        return ObjectMapper.Map<Category, CategoryDto>(category);
     }
 
-    public Task<PagedResultDto<CategoryDto>> GetListAsync(GetCategoryListDto input)
+    public async Task<PagedResultDto<CategoryDto>> GetListAsync(GetCategoryListDto input)
     {
-        throw new NotImplementedException();
+        if(input.Sorting.IsNullOrWhiteSpace())
+        {
+            input.Sorting = nameof(Category.Name);
+        }
+
+        var categories = await _categoryRepository.GetListAsync(
+            input.SkipCount,
+            input.MaxResultCount,
+            input.Sorting,
+            input.Filter
+        );
+
+        var totalCount = input.Filter == null
+            ? await _categoryRepository.CountAsync()
+            : await _categoryRepository.CountAsync(
+                category => category.Name.Contains(input.Filter));
+
+        return new PagedResultDto<CategoryDto>(
+            totalCount,
+            ObjectMapper.Map<List<Category>, List<CategoryDto>>(categories)
+        );
     }
 
-    public Task UpdateAsync(Guid id, UpdateCategoryDto input)
+    public async Task UpdateAsync(Guid id, UpdateCategoryDto input)
     {
-        throw new NotImplementedException();
+        var category = await _categoryRepository.GetAsync(id);
+
+        await _categoryManager.ChangeNameAsync(category, input.Name);
+        category.ChangeDescription(input.Description);
+
+        await _categoryRepository.UpdateAsync(category);
     }
 }

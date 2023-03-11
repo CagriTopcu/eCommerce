@@ -28,11 +28,18 @@ public class Product : FullAuditedAggregateRoot<Guid>
         Guid categoryId) : base(id)
     {
         SetName(name);
-        ShortDescription = shortDescription;
-        FullDescription = fullDescription;
-        Price = price;
-        Stock = stock;
-        CategoryId = categoryId;
+        ShortDescription = Check.NotNullOrWhiteSpace(shortDescription,
+            nameof(shortDescription));
+        FullDescription = Check.NotNullOrWhiteSpace(fullDescription, nameof(fullDescription));
+        Price = Check.NotNull(price, nameof(price));
+        Stock = Check.NotNull(stock, nameof(stock));
+        CategoryId = Check.NotNull(categoryId, nameof(categoryId));
+    }
+
+    internal Product ChangeName([NotNull] string name)
+    {
+        SetName(name);
+        return this;
     }
 
     private void SetName([NotNull] string name)
