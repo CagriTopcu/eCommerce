@@ -2,9 +2,9 @@
 
 namespace eCommerce.Discounts;
 
-public class DiscountAlreadyExistsException : BusinessException
+public class DiscountNameAlreadyExistsException : BusinessException
 {
-    public DiscountAlreadyExistsException(string name)
+    public DiscountNameAlreadyExistsException(string name)
         : base(eCommerceDomainErrorCodes.DiscountAlreadyExists)
     {
         WithData("name", name);

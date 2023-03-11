@@ -12,5 +12,6 @@ namespace eCommerce.Orders
             int maxResultCount,
             string sorting,
             string filter = null);
+        Task<Order> FindByOrderNoAsync(string orderNo);
     }
 }

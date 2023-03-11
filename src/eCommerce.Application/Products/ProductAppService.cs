@@ -19,7 +19,7 @@ public class ProductAppService : eCommerceAppService, IProductAppService
 
     public async Task<ProductDto> CreateAsync(CreateProductDto input)
     {
-        var product = await _productManager.CreateAsync(
+        Product product = await _productManager.CreateAsync(
             input.Name,
             input.ShortDescription,
             input.FullDescription,
@@ -38,7 +38,7 @@ public class ProductAppService : eCommerceAppService, IProductAppService
 
     public async Task<ProductDto> GetAsync(Guid id)
     {
-        var product = await _productRepository.GetAsync(id);
+        Product product = await _productRepository.GetAsync(id);
         return ObjectMapper.Map<Product, ProductDto>(product);
     }
 
@@ -49,14 +49,14 @@ public class ProductAppService : eCommerceAppService, IProductAppService
             input.Sorting = nameof(Product.Name);
         }
 
-        var products = await _productRepository.GetListAsync(
+        List<Product> products = await _productRepository.GetListAsync(
             input.SkipCount,
             input.MaxResultCount,
             input.Sorting,
             input.Filter
         );
 
-        var totalCount = input.Filter == null
+        int totalCount = input.Filter == null
             ? await _productRepository.CountAsync()
             : await _productRepository.CountAsync(
                 product => product.Name.Contains(input.Filter));
@@ -69,13 +69,13 @@ public class ProductAppService : eCommerceAppService, IProductAppService
 
     public async Task UpdateAsync(Guid id, UpdateProductDto input)
     {
-        var existingProduct = await _productRepository.GetAsync(id);
+        Product existingProduct = await _productRepository.GetAsync(id);
 
         await _productManager.ChangeNameAsync(existingProduct, input.Name);
 
         Product product = new(
             id,
-            input.Name,
+            existingProduct.Name,
             input.ShortDescription,
             input.FullDescription,
             input.Price,

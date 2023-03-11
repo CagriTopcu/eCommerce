@@ -32,6 +32,18 @@ public class Discount : AuditedEntity<Guid>
         ExpireDate = expireDate;
     }
 
+    internal Discount ChangeName([NotNull] string name)
+    {
+        SetName(name);
+        return this;
+    }
+
+    internal Discount ChangeCode([NotNull] string code)
+    {
+        SetCode(code); 
+        return this;
+    }
+
     private void SetName([NotNull] string name)
     {
         Name = Check.NotNullOrWhiteSpace(

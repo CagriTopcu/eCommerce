@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Domain.Repositories;
 
 namespace eCommerce.Discounts;
 
@@ -15,28 +17,76 @@ public class DiscountAppService : eCommerceAppService, IDiscountAppService
         _discountManager = discountManager;
     }
 
-    public Task<DiscountDto> CreateAsync(CreateDiscountDto input)
+    public async Task<DiscountDto> CreateAsync(CreateDiscountDto input)
     {
-        throw new NotImplementedException();
+        Discount discount = await _discountManager.CreateAsync(
+            input.Name,
+            input.Code,
+            input.DiscountType,
+            input.DiscountPercentage,
+            input.DiscountAmount,
+            input.IsExpirable,
+            input.StartDate,
+            input.ExpireDate);
+
+        await _discountRepository.InsertAsync(discount);
+        return ObjectMapper.Map<Discount, DiscountDto>(discount);
+    } 
+
+    public async Task DeleteAsync(Guid id)
+    {
+        await _discountRepository.DeleteAsync(id);
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task<DiscountDto> GetAsync(Guid id)
     {
-        throw new NotImplementedException();
+        Discount discount = await _discountRepository.GetAsync(id);
+        return ObjectMapper.Map<Discount, DiscountDto>(discount);
     }
 
-    public Task<DiscountDto> GetAsync(Guid id)
+    public async Task<PagedResultDto<DiscountDto>> GetListAsync(GetDiscountListDto input)
     {
-        throw new NotImplementedException();
+        if(input.Sorting.IsNullOrWhiteSpace())
+        {
+            input.Sorting = nameof(Discount.Name);
+        }
+
+        List<Discount> discounts = await _discountRepository.GetListAsync(
+            input.SkipCount,
+            input.MaxResultCount,
+            input.Sorting,
+            input.Filter
+        );
+
+        int totalCount = input.Filter == null
+            ? await _discountRepository.CountAsync()
+            : await _discountRepository.CountAsync(
+                discount => discount.Name.Contains(input.Filter));
+
+        return new PagedResultDto<DiscountDto>(
+            totalCount,
+            ObjectMapper.Map<List<Discount>, List<DiscountDto>>(discounts)
+        );
     }
 
-    public Task<PagedResultDto<DiscountDto>> GetListAsync(GetDiscountListDto input)
+    public async Task UpdateAsync(Guid id, UpdateDiscountDto input)
     {
-        throw new NotImplementedException();
-    }
+        Discount existingDiscount = await _discountRepository.GetAsync(id);
 
-    public Task UpdateAsync(Guid id, UpdateDiscountDto input)
-    {
-        throw new NotImplementedException();
+        await _discountManager.ChangeNameAsync(existingDiscount, input.Name);
+        await _discountManager.ChangeCodeAsync(existingDiscount, input.Code);
+
+        Discount discount = new(
+            id,
+            existingDiscount.Name,
+            existingDiscount.Code,
+            input.DiscountType,
+            input.DiscountPercentage,
+            input.DiscountAmount,
+            input.IsExpirable,
+            input.StartDate,
+            input.ExpireDate);
+
+        await _discountRepository.UpdateAsync(discount);
     }
 }

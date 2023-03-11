@@ -19,7 +19,7 @@ public class CategoryAppService : eCommerceAppService, ICategoryAppService
 
     public async Task<CategoryDto> CreateAsync(CreateCategoryDto input)
     {
-        var category = await _categoryManager.CreateAsync(
+        Category category = await _categoryManager.CreateAsync(
             input.Name,
             input.Description);
 
@@ -34,7 +34,7 @@ public class CategoryAppService : eCommerceAppService, ICategoryAppService
 
     public async Task<CategoryDto> GetAsync(Guid id)
     {
-        var category = await _categoryRepository.GetAsync(id);
+        Category category = await _categoryRepository.GetAsync(id);
         return ObjectMapper.Map<Category, CategoryDto>(category);
     }
 
@@ -45,14 +45,14 @@ public class CategoryAppService : eCommerceAppService, ICategoryAppService
             input.Sorting = nameof(Category.Name);
         }
 
-        var categories = await _categoryRepository.GetListAsync(
+        List<Category> categories = await _categoryRepository.GetListAsync(
             input.SkipCount,
             input.MaxResultCount,
             input.Sorting,
             input.Filter
         );
 
-        var totalCount = input.Filter == null
+        int totalCount = input.Filter == null
             ? await _categoryRepository.CountAsync()
             : await _categoryRepository.CountAsync(
                 category => category.Name.Contains(input.Filter));
@@ -65,7 +65,7 @@ public class CategoryAppService : eCommerceAppService, ICategoryAppService
 
     public async Task UpdateAsync(Guid id, UpdateCategoryDto input)
     {
-        var category = await _categoryRepository.GetAsync(id);
+        Category category = await _categoryRepository.GetAsync(id);
 
         await _categoryManager.ChangeNameAsync(category, input.Name);
         category.ChangeDescription(input.Description);

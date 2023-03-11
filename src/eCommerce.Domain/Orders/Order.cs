@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 
@@ -6,6 +7,7 @@ namespace eCommerce.Orders;
 
 public class Order : AuditedAggregateRoot<Guid>
 {
+    public string OrderNo { get; private set; }
     public Guid StoreId { get; private set; }
     public Guid CustomerId { get; private set; }
     public Guid BillingAddressId { get; private set; }
@@ -22,8 +24,10 @@ public class Order : AuditedAggregateRoot<Guid>
     {
     }
 
-    public Order(Guid storeId, Guid customerId, Guid billingAddressId, Guid shippingAddressId, Guid paymentId, decimal subtotal, decimal tax, decimal total, decimal discount, bool pickupInStore, OrderStatus status)
+    public Order(Guid id, Guid storeId, Guid customerId, Guid billingAddressId, Guid shippingAddressId, Guid paymentId, decimal subtotal, decimal tax, decimal total, decimal discount, bool pickupInStore, OrderStatus status)
+        : base(id)
     {
+        GenerateOrderNumber();
         StoreId = Check.NotNull(storeId, nameof(storeId));
         CustomerId = Check.NotNull(customerId, nameof(customerId));
         BillingAddressId = Check.NotNull(billingAddressId, nameof(billingAddressId));
@@ -35,5 +39,16 @@ public class Order : AuditedAggregateRoot<Guid>
         Discount = Check.NotNull(discount, nameof(discount));
         PickupInStore = Check.NotNull(pickupInStore, nameof(pickupInStore));
         Status = Check.NotNull(status, nameof(status));
+    }
+
+    private void GenerateOrderNumber()
+    {
+        string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        Random random = new();
+
+        OrderNo = new string(
+            Enumerable.Repeat(chars, 8)
+                .Select(s => s[random.Next(s.Length)])
+                .ToArray());
     }
 }
