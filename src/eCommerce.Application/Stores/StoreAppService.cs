@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Domain.Repositories;
 
 namespace eCommerce.Stores;
 
@@ -15,28 +17,76 @@ public class StoreAppService : eCommerceAppService, IStoreAppService
         _storeManager = storeManager;
     }
 
-    public Task<StoreDto> CreateAsync(CreateStoreDto input)
+    public async Task<StoreDto> CreateAsync(CreateStoreDto input)
     {
-        throw new NotImplementedException();
+        Store store = await _storeManager.CreateAsync(
+            input.UserId,
+            input.Name,
+            input.Title,
+            input.Description,
+            input.Url);
+
+        await _storeRepository.InsertAsync(store);
+        return ObjectMapper.Map<Store, StoreDto>(store);
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        await _storeRepository.DeleteAsync(id);
     }
 
-    public Task<StoreDto> GetAsync(Guid id)
+    public async Task<StoreDto> GetAsync(Guid id)
     {
-        throw new NotImplementedException();
+        Store store = await _storeRepository.GetAsync(id);
+        return ObjectMapper.Map<Store, StoreDto>(store);
     }
 
-    public Task<PagedResultDto<StoreDto>> GetListAsync(GetStoreListDto input)
+    public async Task<PagedResultDto<StoreDto>> GetListAsync(GetStoreListDto input)
     {
-        throw new NotImplementedException();
+        if(input.Sorting.IsNullOrWhiteSpace())
+        {
+            input.Sorting = nameof(Store.Name);
+        }
+
+        List<Store> stores = await _storeRepository.GetListAsync(
+            input.SkipCount,
+            input.MaxResultCount,
+            input.Sorting,
+            input.Filter
+        );
+
+        int totalCount = input.Filter == null
+            ? await _storeRepository.CountAsync()
+            : await _storeRepository.CountAsync(
+                store => store.Name.Contains(input.Filter));
+
+        return new PagedResultDto<StoreDto>(
+            totalCount,
+            ObjectMapper.Map<List<Store>, List<StoreDto>>(stores)
+        );
     }
 
-    public Task UpdateAsync(Guid id, UpdateStoreDto input)
+    public async Task UpdateAsync(Guid id, UpdateStoreDto input)
     {
-        throw new NotImplementedException();
+        Store existingStore = await _storeRepository.GetAsync(id);
+
+        if (existingStore is null)
+            throw new StoreNotFoundException();
+
+        if(input.Name !=  existingStore.Name) 
+            await _storeManager.ChangeNameAsync(existingStore, input.Name);
+
+        if(input.Url != existingStore.Url)
+            await _storeManager.ChangeUrlAsync(existingStore, input.Url);
+
+        Store store = new(
+            id,
+            input.UserId,
+            input.Name,
+            input.Title,
+            input.Description,
+            input.Url);
+
+        await _storeRepository.UpdateAsync(store);
     }
 }

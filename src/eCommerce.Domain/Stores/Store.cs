@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JetBrains.Annotations;
+using System;
 using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 
@@ -16,12 +17,41 @@ public class Store : AuditedEntity<Guid>
     {
     }
 
-    public Store(Guid userId, string name, string title, string description, string url)
+    public Store(Guid id, Guid userId, string name, string title, string description, string url)
+        : base(id)
     {
         UserId = Check.NotNull(userId, nameof(userId));
         Name = Check.NotNull(name, nameof(name), maxLength: StoreConsts.MaxNameLength, minLength: StoreConsts.MinNameLength);
         Title = Check.NotNull(title, nameof(title), maxLength: StoreConsts.MaxTitleLength, StoreConsts.MinTitleLength);
         Description = Check.NotNull(description, nameof(description), maxLength: StoreConsts.MaxDescriptionLength, minLength: StoreConsts.MinDescriptionLength);
         Url = url;
+    }
+
+    internal Store ChangeUrl([NotNull] string url)
+    {
+        SetUrl(url);
+        return this;
+    }
+
+    internal Store ChangeName([NotNull] string name)
+    {
+        SetName(name);
+        return this;
+    }
+
+    private void SetName([NotNull] string name)
+    {
+        Name = Check.NotNullOrWhiteSpace(
+            name,
+            nameof(name),
+            maxLength: StoreConsts.MaxNameLength,
+            minLength: StoreConsts.MinNameLength);
+    }
+
+    private void SetUrl([NotNull] string url)
+    {
+        Url = Check.NotNullOrWhiteSpace(
+            url,
+            nameof(url));
     }
 }

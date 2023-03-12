@@ -23,7 +23,7 @@ public class ProductManager : DomainService
         [NotNull] int stock,
         [NotNull] Guid categoryId)
     {
-        var existingProduct = await _productRepository.FindByNameAsync(name);
+        Product existingProduct = await _productRepository.FindByNameAsync(name);
 
         if (existingProduct is not null)
             throw new ProductAlreadyExistsException(name);
@@ -45,7 +45,7 @@ public class ProductManager : DomainService
         Check.NotNull(product, nameof(product));
         Check.NotNullOrWhiteSpace(newName, nameof(newName));
 
-        var existingProduct = await _productRepository.FindByNameAsync(newName);
+        Product existingProduct = await _productRepository.FindByNameAsync(newName);
 
         if (existingProduct is not null && existingProduct.Id != product.Id)
             throw new ProductAlreadyExistsException(newName);

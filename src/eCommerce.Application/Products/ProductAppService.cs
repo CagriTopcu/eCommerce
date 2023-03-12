@@ -71,11 +71,12 @@ public class ProductAppService : eCommerceAppService, IProductAppService
     {
         Product existingProduct = await _productRepository.GetAsync(id);
 
-        await _productManager.ChangeNameAsync(existingProduct, input.Name);
+        if(input.Name != existingProduct.Name)
+            await _productManager.ChangeNameAsync(existingProduct, input.Name);
 
         Product product = new(
             id,
-            existingProduct.Name,
+            input.Name,
             input.ShortDescription,
             input.FullDescription,
             input.Price,

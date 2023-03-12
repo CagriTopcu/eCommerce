@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Domain.Repositories;
 
 namespace eCommerce.Payments;
 
@@ -15,28 +17,66 @@ public class PaymentAppService : eCommerceAppService, IPaymentAppService
         _paymentManager = paymentManager;
     }
 
-    public Task<PaymentDto> CreateAsync(CreatePaymentDto input)
+    public async Task<PaymentDto> CreateAsync(CreatePaymentDto input)
     {
-        throw new NotImplementedException();
+        Payment payment = new(
+            GuidGenerator.Create(),
+            input.OrderId,
+            input.Amount,
+            input.Status,
+            input.Currency);
+
+        await _paymentRepository.InsertAsync(payment);
+        return ObjectMapper.Map<Payment, PaymentDto>(payment);
     }
 
-    public Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        await _paymentRepository.DeleteAsync(id);
     }
 
-    public Task<PaymentDto> GetAsync(Guid id)
+    public async Task<PaymentDto> GetAsync(Guid id)
     {
-        throw new NotImplementedException();
+        Payment payment = await _paymentRepository.GetAsync(id);
+        return ObjectMapper.Map<Payment, PaymentDto>(payment);
     }
 
-    public Task<PagedResultDto<PaymentDto>> GetListAsync(GetPaymentListDto input)
+    public async Task<PagedResultDto<PaymentDto>> GetListAsync(GetPaymentListDto input)
     {
-        throw new NotImplementedException();
+        if(input.Sorting.IsNullOrWhiteSpace())
+        {
+            input.Sorting = nameof(Payment.CreationTime);
+        }
+
+        List<Payment> payments = await _paymentRepository.GetListAsync(
+            input.SkipCount,
+            input.MaxResultCount,
+            input.Sorting,
+            input.Filter
+        );
+
+        int totalCount = await _paymentRepository.CountAsync();
+
+        return new PagedResultDto<PaymentDto>(
+            totalCount,
+            ObjectMapper.Map<List<Payment>, List<PaymentDto>>(payments)
+        );
     }
 
-    public Task UpdateAsync(Guid id, UpdatePaymentDto input)
+    public async Task UpdateAsync(Guid id, UpdatePaymentDto input)
     {
-        throw new NotImplementedException();
+        Payment existingPayment = await _paymentRepository.GetAsync(id);
+
+        if (existingPayment is null)
+            throw new PaymentNotFoundException();
+
+        Payment payment = new(
+            id,
+            input.OrderId,
+            input.Amount,
+            input.Status,
+            input.Currency);
+
+        await _paymentRepository.UpdateAsync(payment);
     }
 }

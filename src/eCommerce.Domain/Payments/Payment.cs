@@ -15,7 +15,8 @@ public class Payment : AuditedEntity<Guid>
     {
     }
 
-    public Payment(Guid orderId, decimal amount, PaymentStatus paymentStatus, Currency currency)
+    public Payment(Guid id, Guid orderId, decimal amount, PaymentStatus paymentStatus, Currency currency)
+        : base(id)
     {
         OrderId = Check.NotNull(orderId, nameof(orderId));
         Amount = Check.NotNull(amount, nameof(amount));
