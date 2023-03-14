@@ -5,12 +5,12 @@ using eCommerce.Payments;
 using eCommerce.Products;
 using eCommerce.Stores;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
-using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
@@ -88,89 +88,6 @@ public class eCommerceDbContext :
         builder.ConfigureTenantManagement();
 
         /* Configure your own tables/entities inside here */
-
-        builder.Entity<Category>(b =>
-        {
-            b.ToTable(eCommerceConsts.DbTablePrefix + "Categories",
-                eCommerceConsts.DbSchema);
-
-            b.ConfigureByConvention();
-
-            b.Property(x => x.Name)
-                .IsRequired()
-                .HasMaxLength(CategoryConsts.MaxNameLength);
-        });
-
-        builder.Entity<Discount>(b =>
-        {
-            b.ToTable(eCommerceConsts.DbTablePrefix + "Discounts",
-                eCommerceConsts.DbSchema);
-
-            b.ConfigureByConvention();
-
-            b.Property(x => x.Name)
-                .IsRequired()
-                .HasMaxLength(DiscountConsts.MaxNameLength);
-
-            b.Property(x => x.Code)
-                .IsRequired()
-                .HasMaxLength(DiscountConsts.MaxCodeLength);
-
-            b.Property(x => x.DiscountType)
-                .IsRequired();
-
-            b.Property(x => x.DiscountPercentage)
-                .IsRequired();
-
-            b.Property(x => x.DiscountAmount)
-                .IsRequired();
-
-            b.Property(x => x.IsExpirable)
-                .IsRequired();
-        });
-
-        builder.Entity<Order>(b =>
-        {
-            b.ToTable(eCommerceConsts.DbTablePrefix + "Orders",
-                eCommerceConsts.DbSchema);
-
-            b.ConfigureByConvention();
-
-            b.Property(x => x.OrderNo)
-                .IsRequired();
-
-            b.Property(x => x.StoreId)
-                .IsRequired();
-
-            b.Property(x => x.CustomerId)
-                .IsRequired();
-
-            b.Property(x => x.BillingAddressId)
-                .IsRequired();
-
-            b.Property(x => x.ShippingAddressId)
-                .IsRequired();
-
-            b.Property(x => x.PaymentId)
-                .IsRequired();
-
-            b.Property(x => x.Subtotal)
-                .IsRequired();
-
-            b.Property(x => x.Tax)
-                .IsRequired();
-
-            b.Property(x => x.Total)
-                .IsRequired();
-
-            b.Property(x => x.Discount)
-                .IsRequired();
-
-            b.Property(x => x.PickupInStore)
-                .IsRequired();
-
-            b.Property(x => x.Status)
-                .IsRequired();
-        });
+        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 }
